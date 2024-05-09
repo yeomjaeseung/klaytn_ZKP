@@ -1,25 +1,42 @@
 ## How does it work
-The CompConstant(ct) template compares a binary input array in with a constant value ct. It returns 1 if the binary input is greater than ct, otherwise, it returns 0. This template is used to determine the numerical relationship between a given constant and a binary number.
+The CompConstant(ct) template in Circom compares a binary input array in with a constant value ct. It returns 1 if the binary input is greater than the constant, and 0 otherwise. This function is crucial in cryptographic computations where conditions based on comparisons dictate subsequent logic or outputs.
 
-## Circuit Structure
+
 # Input Signals
 in[254]: A binary array representing the 254-bit input number.
+
 # Output Signal
 out: Outputs 1 if the input array is greater than ct, otherwise outputs 0.
 
 ## Internal Logic
-The circuit processes each bit of the input array in and the constant ct, comparing each bit and storing intermediate results in the parts array based on the following conditions:
 
-If both bits are 0, a specific result calculation is applied.
-If the first bit is 0 and the second bit is 1, a different result calculation is performed.
-If the first bit is 1 and the second bit is 0, another calculation method is applied.
-If both bits are 1, a final different calculation is conducted.
-The results from each bit comparison are accumulated in the parts array and summed up in the sum variable. This sum is then passed to the sout signal.
+1. Initialization:
 
-The sout signal is processed through the Num2Bits component, translating the summed value into the final output signal out.
+Variables clsb, cmsb, slsb, smsb: These are used to hold the current least significant bit and most significant bit of the constant and the slice of the input array.
+sum: This accumulates the results from the bit comparisons.
+b, a, e: Variables initialized to manage the powers of 2 and adjustments in the loop.
 
-## Example Usage
-Here’s an example demonstrating how to utilize the CompConstant template within a Circom circuit:
+2. Bitwise Comparison Loop:
+
+Loop iterates 127 times, each time processing two bits from the input and constant.
+Comparison and Calculation:
+Extract bits from ct and in.
+Depending on the bits of ct (clsb and cmsb), apply different arithmetic operations involving the corresponding bits from in (slsb and smsb).
+Accumulate results in sum.
+
+3. Sum Output:
+
+sout signal receives the accumulated sum.
+This is then processed by a Num2Bits component which ensures the sum is converted back into a binary format that ensures only the most significant bit is output through out.
+
+# Detailed Comparison Logic
+If both bits are 0: Perform a specific multiplication and addition sequence to adjust the intermediate sum.
+If clsb is 0 and cmsb is 1: Apply a different sequence involving negation and subtraction.
+If clsb is 1 and cmsb is 0: Use addition predominantly to adjust the values.
+If both bits are 1: Negation and direct addition without multiplication.
+
+
+## Here’s an example demonstrating how to utilize the CompConstant template within a Circom circuit:
 ```
 template CompConstant(ct) {
     signal input in[254];
@@ -64,4 +81,4 @@ template CompConstant(ct) {
     out <== num2bits.out[127];
 }
 ```
-In this example, we define a circuit that uses the CompConstant template to compare an input binary array against a constant. The internal workings involve bit-by-bit comparison, generating intermediate results stored in parts, and summing them to produce a final output. The example is designed to demonstrate how the circuit can evaluate the binary relationship between the given constant ct and the input array in.
+This example showcases how to use the CompConstant template to compare a binary number against a constant, demonstrating the flexibility of Circom in cryptographic applications where comparisons drive conditional logic. The template's efficiency in handling binary data makes it a powerful tool in zero-knowledge proof constructions.
